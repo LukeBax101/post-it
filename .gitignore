@@ -1,0 +1,9 @@
+# Dependency directories
+node_modules/
+
+# Secrets
+secrets/*
+!secrets/password.example
+
+# Database
+database/data
