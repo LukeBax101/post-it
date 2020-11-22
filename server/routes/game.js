@@ -108,7 +108,7 @@ router.get('/:secretId', async (req, res) => {
        const gameInfo = await getGame(req.params.secretId);
        res.json(gameInfo);
     } catch (e) {
-      res.clearCookie('xsecretId');
+      res.clearCookie('secretId');
       res.status(400).send(e.message);
     }
 });

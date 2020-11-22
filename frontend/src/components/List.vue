@@ -45,13 +45,10 @@
           </div>
           <div class="text-container">
             <span class="text">
-              {{ item.name.length > 20 ? `${item.name.slice(0,20)}...` : item.name }}
+              {{ item.name }}
             </span>
             <span class="text" style="white-space: nowrap;" v-if="item.post_it_name">
-              {{  item.post_it_name.length > 15
-                ? `↳  ${item.post_it_name.slice(0,15)}...`
-                : `↳ ${item.post_it_name}`
-              }}
+              {{ `↳ ${item.post_it_name}`}}
             </span>
           </div>
           <div
@@ -108,19 +105,19 @@
     <b-modal id="player-info-modal" centered title="Player Info">
       <div>
         <span>
-            Player Name:
+            <b>Player Name:</b>
         </span>
         <span style="float: right;">{{ playerInfoName }}</span>
       </div>
       <div>
         <span>
-          Post-it:
+          <b>Post-it:</b>
         </span>
         <span style="float: right;">  {{ playerInfoPostIt }}</span>
       </div>
       <div>
         <span>
-            Given By:
+            <b>Given By:</b>
         </span>
         <span style="float: right;">{{ playerInfoGiver }}</span>
       </div>
@@ -279,7 +276,6 @@ export default {
   max-width: 80%;
 }
 
-
 .self-item {
   background-color: rgba(255, 165, 32, 0.2);
 }
@@ -305,12 +301,12 @@ export default {
   border: none;
   box-shadow: 4px 2px 10px 6px $box-shadow;
   font-weight: bold;
+  padding: 6px;
 }
 
 .button-item {
-  display: grid;
+  position: relative;
   align-items: center;
-  grid-template-columns: 30px 50px auto 50px 30px;
 }
 
 .btn-block-margin {
@@ -318,26 +314,39 @@ export default {
 }
 
 .text-container {
-  grid-column: 3;
+  position: absolute;
+  width: calc(100% - 140px);
+  left: 60px;
+  height: 60px;
+  top: 0px;
   display: flex;
   flex-direction: column;
+  overflow-x: scroll;
   justify-content: center;
   align-items: center;
   align-self: stretch;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
 }
 
 .icon-start {
-  grid-column: 1;
+  position: absolute;
+  width: 35px;
+  top: 18px;
 }
 
 @keyframes point {
-    0% { transform: translateX(-10px); }
-    50% { transform: translateX(10px); }
-    100% { transform: translateX(-10px); }
+    0% { transform: translateX(00px); }
+    50% { transform: translateX(15px); }
+    100% { transform: translateX(0px); }
 }
 
 .icon-start-2 {
-  grid-column: 2;
+  position: absolute;
+  width: 35px;
+  left: 35px;
+  top: 18px;
   -webkit-animation: point 1.5s infinite ease-in-out;
   -o-animation: point 1.5s infinite ease-in-out;
   -ms-animation: point 1.5s infinite ease-in-out;
@@ -346,10 +355,16 @@ export default {
 }
 
 .icon-end {
-  grid-column: 5;
+  width: 35px;
+  right: 0px;
+  top: 18px;
+  position: absolute;
 }
-.icon-end -2 {
-  grid-column: 4;
+.icon-end-2 {
+  position: absolute;
+  width: 35px;
+  right: 35px;
+  top: 18px;
 }
 
 .post-it {
