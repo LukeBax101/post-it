@@ -13,42 +13,57 @@
         v-on:right-clicked="$bvModal.show('settings-modal')"
       ></Header>
       <div class="play-area-body">
-        <div class="tutorial-header">Tutorial</div>
-        <div class="tutorial-text">
-          <p>- Now just go round the group one-by-one asking <i>yes</i> or
-            <i>no</i> questions about your identity.</p>
-          <p>- If you want to see everybody's post-its or want a recommended
-             order of play to get started then click <b>'Recommended Order'</b> below.</p>
-          <p>- Stuck for what to ask as a question? Click <b>'Starter questions'</b> below.</p>
-          <p>- Once you've guessed your post it (and everyone else agrees you've
-            got it!), click <b>'I've got it!''</b> below to confirm your finishing position! </p>
-            <p> _</p>
+        <div class="order-panel" v-if="isOrder">
+          <h4>Order of Play</h4>
+          <b-list-group>
+            <b-list-group-item
+              v-for="(item, idx) in recommendedOrder"
+              v-bind:key="item.player_id"
+              :variant="item.completed_at ? 'success' : null"
+              class="order-item"
+            >
+            <div>
+              {{ idx + 1 }}.
+            </div>
+            <div class="order-item-name">
+              {{ `‏‏‎ ‎‏‏‎ ‎${item.name}‏‏‎ ‎‏‏‎ ‎` }}
+            </div>
+            →
+            <div class="order-item-value">
+            {{ `‏‏‎ ‎‏‏‎ ‎${item.post_it_name}` }}
+            </div>
+            <div
+              class="icon-end"
+              v-on:click.stop="showPlayerInfo(item)"
+            >
+              <b-icon icon="info-circle"></b-icon>
+            </div>
+            </b-list-group-item>
+          </b-list-group>
         </div>
-        <b-button
-          class='recommended-order'
-          variant="info"
-          v-on:click="$bvModal.show('recommended-order-modal');"
-        >
-          Recommended Order
-        </b-button>
-        <b-button
-          class='starter-questions'
-          variant="info"
-          v-on:click="$bvModal.show('starter-questions-modal');"
-        >
-          Starter Questions
-        </b-button>
-        <div class="question-area">
-          Question log disabled on this game...
+        <div class="question-panel" v-if="!isOrder">
+          <h4>Questions</h4>
         </div>
         <b-button
           class='win-button'
+          v-if="notYetWon"
           variant="info"
           v-on:click="claimWinConfirm()"
         >
           I've got it!
         </b-button>
+        <div
+          v-if="!notYetWon"
+          class='lobby-text pulse'
+        >
+          <span> Good job! Just waiting on the others now... </span>
+        </div>
       </div>
+      <NavBar
+        :icons="navBarIcons"
+        :selected="isOrder ? 0 : 1"
+        v-on:nav-bar-clicked="navBarClicked"
+      ></NavBar>
     </b-overlay>
     <Modal
       id = "settings-modal"
@@ -56,20 +71,27 @@
       :fields="selfHost ? hostOptions : playerOptions"
       noSubmit
     ></Modal>
-    <b-modal id="recommended-order-modal" scrollable centered title="Recommended Order">
-      <b-list-group>
-        <b-list-group-item
-          v-for="(item, idx) in recommendedOrder"
-          v-bind:key="item.player_id"
-          :variant="item.completed_at ? 'success': null"
-        >
-          {{ idx + 1 }}. {{ item.name }} -> {{ item.post_it_name }}
-        </b-list-group-item>
-      </b-list-group>
-  </b-modal>
-  <b-modal id="starter-questions-modal" centered title="Starter Questions">
-    Starter questions
-  </b-modal>
+    <b-modal id="player-info-modal" centered title="Player Info">
+      <div style="display: flex; flex-direction: column;">
+        <div>
+            <b>Player Name:</b>
+        </div>
+        <div>{{ playerInfo.name }}</div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div>
+          <b>Post-it:</b>
+        </div>
+        <div>  {{ playerInfo.post_it_name }}</div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div>
+            <b>Given By:</b>
+        </div>
+        <div>{{ playerInfoGiver }}</div>
+      </div>
+    </b-modal>
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
   </div>
 </template>
 
@@ -77,12 +99,15 @@
 import { mapGetters, mapActions } from 'vuex';
 import Header from '@/components/Header.vue';
 import Modal from '@/components/Modal.vue';
+import NavBar from '@/components/NavBar.vue';
+import ConfettiGenerator from 'confetti-js';
 
 export default {
   name: 'PlayArea',
   components: {
     Header,
     Modal,
+    NavBar,
   },
   data() {
     return {
@@ -95,7 +120,10 @@ export default {
         isValid: () => true,
         type: 'button',
       }],
-      order: [1, 2, 3],
+      navBarIcons: ['card-list', 'pencil-square'],
+      isOrder: true,
+      playerInfo: '',
+      confetti: null,
     };
   },
   computed: {
@@ -103,6 +131,7 @@ export default {
       'selfHost',
       'players',
       'recommendedOrder',
+      'playerId',
     ]),
     hostOptions() {
       return [{
@@ -128,9 +157,26 @@ export default {
         type: 'button',
       }];
     },
+    playerInfoGiver() {
+      const giverPlayer = this.playerInfo.giver_player_id && this.players
+        .find((storedPlayer) => storedPlayer.player_id === this.playerInfo.giver_player_id);
+      return giverPlayer ? giverPlayer.name : 'Unknown';
+    },
+    notYetWon() {
+      const player = this.players.find((play) => play.player_id === this.playerId);
+      if (!player) return true;
+      return !player.completed_at;
+    },
   },
   async mounted() {
     this.load();
+    const confettiSettings = {
+      target: 'confetti-canvas',
+      respawn: false,
+      start_from_edge: true,
+      rotate: true,
+    };
+    this.confetti = new ConfettiGenerator(confettiSettings);
   },
   methods: {
     ...mapActions([
@@ -140,6 +186,19 @@ export default {
       'kickPlayer',
       'claimWin',
     ]),
+    showConfetti() {
+      this.confetti.render();
+      setTimeout(() => {
+        this.confetti.clear();
+      }, 15000);
+    },
+    showPlayerInfo(player) {
+      this.playerInfo = player;
+      this.$bvModal.show('player-info-modal');
+    },
+    navBarClicked(idx) {
+      this.isOrder = idx === 0;
+    },
     async load() {
       this.loading = true;
       await this.getGameData();
@@ -158,6 +217,7 @@ export default {
         centered: true,
       });
       if (confirmed) {
+        this.showConfetti();
         this.claimWin();
       }
     },
@@ -214,6 +274,15 @@ export default {
 </script>
 
 <style lang="scss">
+.confetti-canvas {
+  position: absolute;
+  top: 0px;
+  height: 100vh;
+  left: 0px;
+  width: 100vw;
+  pointer-events: none;
+}
+
 .play-area {
   position: absolute;
   width: 100%;
@@ -229,9 +298,42 @@ export default {
 .play-area-body {
   display: grid;
   width: 100%;
-  height: calc(100% - 50px);
+  height: calc(100% - 100px);
   grid-template-columns: 50% 50%;
-  grid-template-rows: 20px 120px 60px auto 60px;
+  grid-template-rows: 40px 120px 60px auto 60px;
+}
+
+.order-panel {
+  grid-column: 1 / span 2;
+  grid-row: 1 / span 4;
+}
+
+.question-panel {
+  grid-column: 1 / span 2;
+  grid-row: 1 / span 4;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.order-item-name {
+  flex-grow: 2;
+  max-width: 100px;
+  overflow-x: scroll;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
+}
+
+.order-item-value {
+  flex-grow: 2;
+  max-width: 100px;
+  overflow-x: scroll;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5% 95%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 5% 95%, transparent 100%);
 }
 
 .question-area {
@@ -255,18 +357,6 @@ export default {
   font-family: cursive;
 }
 
-.tutorial-text {
-  grid-row: 2;
-  grid-column: 1 / span 2;
-  font-size: 12px;
-  justify-selft: center;
-  margin: 10px;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10% 50%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 10% 50%, transparent 100%);
-  font-family: cursive;
-  overflow-y: scroll;
-}
-
 .recommended-order {
   grid-row: 3;
   grid-column: 1;
@@ -283,4 +373,13 @@ export default {
   font-size: 13px;
 }
 
+.lobby-text {
+  grid-column: 1 / span 2;
+  display: flex;
+  flex-direction: rows;
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+  font-size: 17px;
+}
 </style>

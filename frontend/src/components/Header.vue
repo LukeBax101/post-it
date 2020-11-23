@@ -1,12 +1,21 @@
 <template>
   <div class="header" :key="title">
-    <!-- <button v-if="leftIcon" class="button left" v-on:click="leftClicked">
-      <b-icon :scale="leftScale" :icon="leftIcon"></b-icon>
-    </button> -->
+    <button class="button left" v-on:click="$bvModal.show('help-modal');">
+      <b-icon scale="1.3" icon="question-circle"></b-icon>
+    </button>
     <h3 v-bind:class="{ 'title': !textTitle, 'text-title': textTitle}">{{ title }}</h3>
     <button v-if="rightIcon" class="button right" v-on:click="rightClicked">
       <b-icon :scale="rightScale" :icon="rightIcon"></b-icon>
     </button>
+    <b-modal id="help-modal" centered title="Help">
+      <p>- Now just go round the group one-by-one asking <i>yes</i> or
+        <i>no</i> questions about your identity.</p>
+      <p>- If you want to see everybody's post-its or want a recommended
+         order of play to get started then click <b>'Recommended Order'</b> below.</p>
+      <p>- Stuck for what to ask as a question? Click <b>'Starter questions'</b> below.</p>
+      <p>- Once you've guessed your post it (and everyone else agrees you've
+        got it!), click <b>'I've got it!''</b> below to confirm your finishing position! </p>
+    </b-modal>
   </div>
 </template>
 
@@ -64,6 +73,10 @@ h3 {
 
 .right {
   right: 10px;
+}
+
+.left {
+  left: 10px;
 }
 
 .title {

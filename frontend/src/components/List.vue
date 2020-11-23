@@ -45,10 +45,10 @@
           </div>
           <div class="text-container">
             <span class="text">
-              {{ item.name }}
+              {{ `‏‏‎ ‎‏‏‎ ‎${item.name}` }}
             </span>
             <span class="text" style="white-space: nowrap;" v-if="item.post_it_name">
-              {{ `↳ ${item.post_it_name}`}}
+              {{ `‏‏‎ ‎‏‏‎ ‎↳ ${item.post_it_name}‏‏‎ ‎‏‏‎ ‎`}}
             </span>
           </div>
           <div
@@ -103,26 +103,25 @@
     </div>
     </transition-group>
     <b-modal id="player-info-modal" centered title="Player Info">
-      <div>
-        <span>
+      <div style="display: flex; flex-direction: column;">
+        <div>
             <b>Player Name:</b>
-        </span>
-        <span style="float: right;">{{ playerInfoName }}</span>
+        </div>
+        <div>{{ playerInfo.name }}</div>
       </div>
-      <div>
-        <span>
+      <div style="display: flex; flex-direction: column;">
+        <div>
           <b>Post-it:</b>
-        </span>
-        <span style="float: right;">  {{ playerInfoPostIt }}</span>
+        </div>
+        <div>  {{ playerInfo.post_it_name }}</div>
       </div>
-      <div>
-        <span>
+      <div style="display: flex; flex-direction: column;">
+        <div>
             <b>Given By:</b>
-        </span>
-        <span style="float: right;">{{ playerInfoGiver }}</span>
+        </div>
+        <div>{{ playerInfoGiver }}</div>
       </div>
-
-  </b-modal>
+    </b-modal>
   </div>
 </template>
 
@@ -185,12 +184,6 @@ export default {
       return this.players
         .filter((player) => !player.post_it_name)
         .map((player) => player.player_id);
-    },
-    playerInfoName() {
-      return this.playerInfo.name;
-    },
-    playerInfoPostIt() {
-      return this.playerInfo.post_it_name;
     },
     playerInfoGiver() {
       const giverPlayer = this.playerInfo.giver_player_id && this.players

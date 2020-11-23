@@ -13,7 +13,37 @@
         v-on:right-clicked="$bvModal.show('settings-modal')"
       ></Header>
       <div class="results-body">
-        <b-table striped hover class="results-table" :items="results" :fields="fields"></b-table>
+        <b-table
+          striped
+          hover
+          small
+          class="results-table"
+          :items="results"
+          :fields="fields"
+        >
+        <template #cell(showDetails)="row">
+        <div
+          @click="row.toggleDetails"
+        >
+          <b-icon icon="info-circle"></b-icon>
+        </div>
+      </template>
+      <template #row-details="row">
+        <b-card class="card">
+          <b-row class="mb-2">
+            <b-col sm="3" class="text-sm-right"><b>Post-it:</b></b-col>
+            <b-col class="results-text">{{ row.item.postIt }}</b-col>
+          </b-row>
+
+          <b-row class="mb-2">
+            <b-col sm="3" class="text-sm-right"><b>Given By:</b></b-col>
+            <b-col class="results-text">{{ row.item.giverPlayer }}</b-col>
+          </b-row>
+
+          <b-button size="sm" @click="row.toggleDetails">Hide Details</b-button>
+        </b-card>
+      </template>
+        </b-table>
         <b-button
           class='play-again-button'
           v-if="selfHost"
@@ -61,7 +91,13 @@ export default {
         isValid: () => true,
         type: 'button',
       }],
-      fields: ['pos', 'name', 'post-it', 'split'],
+      confetti: null,
+      fields: [
+        'pos',
+        'name',
+        'split',
+        { key: 'showDetails', label: '' },
+      ],
     };
   },
   computed: {
@@ -72,12 +108,16 @@ export default {
     ]),
     results() {
       const baseTime = new Date(this.playerResults[0].completed_at);
-      return this.playerResults.map((player, idx) => ({
-        pos: this.genPos(idx + 1),
-        name: player.name.length > 8 ? `${player.name.slice(0, 8)}...` : player.name,
-        'post-it': player.post_it_name?.length > 8 ? `${player.post_it_name.slice(0, 8)}...` : player.post_it_name,
-        split: this.genSplit(new Date(player.completed_at) - baseTime),
-      }));
+      return this.playerResults.map((player, idx) => {
+        const giverPlayer = this.players.find((play) => play.giver_player_id === player.player_id);
+        return {
+          pos: this.genPos(idx + 1),
+          name: player.name.length > 18 ? `${player.name.slice(0, 18)}...` : player.name,
+          postIt: `‏‏‎ ‎‏‏‎ ‎${player.post_it_name}`,
+          split: this.genSplit(new Date(player.completed_at) - baseTime),
+          giverPlayer: giverPlayer ? `‏‏‎ ‎‏‏‎ ‎${giverPlayer.name}‏‏‎ ‎‏‏‎ ‎` : 'Unknown',
+        };
+      });
     },
     hostOptions() {
       return [{
@@ -186,6 +226,21 @@ export default {
 
 .results-table {
   grid-row: 2;
+}
+
+div.card-body {
+ padding: 10px;
+ width: calc(100vw - 12px);
+}
+
+div.results-text.col {
+  padding: 5px;
+  margin-left: 20px;
+  margin-right: 20px;
+  width: calc(100vw - 32px);
+  overflow-x: scroll;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
 }
 
 .play-again-button {

@@ -55,24 +55,9 @@ export default {
     EventBus.$off('show-alert');
   },
   computed: {
-    // ...mapGetters([
-    //   'metrics',
-    // ]),
     showFloatButton() {
       return false;
     },
-    // showNavBar() {
-    //   return this.$route.name !== 'Home';
-    // },
-    // currentNavBar() {
-    //   if (this.$route.name === 'Legend') {
-    //     return 1;
-    //   }
-    //   if (this.$route.name === 'Settings') {
-    //     return 2;
-    //   }
-    //   return 0;
-    // },
   },
   methods: {
     ...mapActions([
@@ -81,15 +66,6 @@ export default {
     floatButtonClicked() {
       console.log('float clicked');
     },
-    // navBarClicked(idx) {
-    //   if (idx === 0) {
-    //     this.$router.push('/graph');
-    //   } else if (idx === 1) {
-    //     this.$router.push('/legend');
-    //   } else if (idx === 2) {
-    //     this.$router.push('/settings');
-    //   }
-    // },
   },
 };
 </script>
