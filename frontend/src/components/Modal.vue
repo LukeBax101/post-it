@@ -168,8 +168,6 @@ export default {
 .modal-code-text {
   flex-basis: 35px;
   padding: 11px !important;
-  border-style: solid;
-  border: 2px;
   margin: 2px;
 }
 
