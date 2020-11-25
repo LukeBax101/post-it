@@ -32,6 +32,21 @@
             </b-dropdown-item>
             </b-dropdown>
           </div>
+          <div v-else-if="field.type === 'code'" class="modal-code">
+            <b-form-input
+              v-for="index in field.default.length"
+              class="modal-code-text"
+              :id="`${field.id}-code-${index}`"
+              :key="`${field.id}-code-${index}`"
+              :value="values[field.id] ? values[field.id][index - 1] : null"
+              type="text"
+              required
+              maxlength=1
+              :autofocus="index === 1"
+              v-on:update="(val) => fieldUpdated(field.id, val, index)"
+            >
+            </b-form-input>
+          </div>
           <div v-else-if="field.type === 'button'" class="modal-button">
             <b-button
               :variant="field.variant"
@@ -95,14 +110,22 @@ export default {
     setInitialValues() {
       const initialFields = this.fields.reduce((acc, field) => (field.default ? ({
         ...acc,
-        [field.id]: field.default,
+        [field.id]: Array.isArray(field.default) ? [...field.default] : field.default,
       }) : acc), {});
       Object.entries(initialFields).forEach(([key, val]) => {
         Vue.set(this.values, key, val);
       });
     },
-    fieldUpdated(id, val) {
-      Vue.set(this.values, id, val);
+    fieldUpdated(id, val, idx) {
+      if (idx) {
+        const newVal = this.values[id];
+        newVal[idx - 1] = val;
+        Vue.set(this.values, id, newVal);
+        const nextBox = document.getElementById(`${id}-code-${idx + 1}`);
+        if (nextBox) nextBox.focus();
+      } else {
+        Vue.set(this.values, id, val);
+      }
       if (this.validity[id] === false) {
         this.validity[id] = this.fields.filter((field) => field.id === id)[0].isValid(val);
       }
@@ -136,6 +159,19 @@ export default {
 </script>
 
 <style>
+
+.modal-code {
+  display: flex;
+  justify-content: flex-flex-start;
+}
+
+.modal-code-text {
+  flex-basis: 35px;
+  padding: 11px !important;
+  border-style: solid;
+  border: 2px;
+  margin: 2px;
+}
 
 .modal-button {
   display: flex;

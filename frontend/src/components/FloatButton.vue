@@ -1,9 +1,10 @@
 <template>
     <button
       class="float-button"
+      v-bind:class="{'bottom': bottom}"
       v-on:click="() => clicked()"
     >
-      <b-icon scale="2" :icon="icon"></b-icon>
+      <b-icon scale="1.8" :icon="icon"></b-icon>
     </button>
 </template>
 
@@ -12,6 +13,7 @@ export default {
   name: 'FloatButton',
   props: {
     icon: String,
+    bottom: Boolean,
   },
   methods: {
     clicked() {
@@ -36,6 +38,10 @@ export default {
   background: $scheme-dark;
   color: white;
   box-shadow: 1px 5px 10px 3px rgba(130,130,130,0.5);
+}
+
+.bottom {
+  bottom: 20px;
 }
 
 .slide-in-enter-active {

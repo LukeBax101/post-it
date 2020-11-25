@@ -7,15 +7,6 @@
     <button v-if="rightIcon" class="button right" v-on:click="rightClicked">
       <b-icon :scale="rightScale" :icon="rightIcon"></b-icon>
     </button>
-    <b-modal id="help-modal" centered title="Help">
-      <p>- Now just go round the group one-by-one asking <i>yes</i> or
-        <i>no</i> questions about your identity.</p>
-      <p>- If you want to see everybody's post-its or want a recommended
-         order of play to get started then click <b>'Recommended Order'</b> below.</p>
-      <p>- Stuck for what to ask as a question? Click <b>'Starter questions'</b> below.</p>
-      <p>- Once you've guessed your post it (and everyone else agrees you've
-        got it!), click <b>'I've got it!''</b> below to confirm your finishing position! </p>
-    </b-modal>
   </div>
 </template>
 

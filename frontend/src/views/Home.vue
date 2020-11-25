@@ -9,6 +9,21 @@
         Create game
       </b-button>
     </div>
+    <!-- Place this tag where you want the button to render. -->
+    <github-button
+      href="https://github.com/lukebax101"
+      data-color-scheme="no-preference: dark; light: light; dark: dark;"
+      aria-label="Follow @lukebax101 on GitHub"
+      class="github-button"
+      >
+      Check out the code
+    </github-button>
+    <FloatButton
+      bottom
+      icon="question"
+      v-on:float-button-clicked="$bvModal.show('help-modal');"
+    >
+    </FloatButton>
     <div class="copy-right">
       <span> Copyright © Luke Baxter 2020 </span>
     </div>
@@ -16,7 +31,7 @@
       id = "join-game-modal"
       title="Join Game"
       :fields="joinGameModal"
-      v-on:submit="joinGame"
+      v-on:submit="joinGameSubmit"
     ></Modal>
     <Modal
       id = "new-game-modal"
@@ -24,18 +39,22 @@
       :fields="newGameModal"
       v-on:submit="newGame"
     ></Modal>
+
   </div>
 </template>
 
 <script>
 import { mapActions } from 'vuex';
 import Modal from '@/components/Modal.vue';
-
+import FloatButton from '@/components/FloatButton.vue';
+import GithubButton from 'vue-github-button';
 
 export default {
   name: 'Home',
   components: {
     Modal,
+    GithubButton,
+    FloatButton,
   },
   data() {
     return {
@@ -50,8 +69,9 @@ export default {
         id: 'gameCode',
         label: 'Game Code',
         invalidFeedback: 'Game code must be four characters long',
-        isValid: (id) => (id && id.length === 4),
-        type: 'text',
+        isValid: (id) => (id && Array.isArray(id) && id.every((el) => !!el)),
+        type: 'code',
+        default: ['', '', '', ''],
       },
       {
         id: 'name',
@@ -70,6 +90,12 @@ export default {
       'newGame',
       'joinGame',
     ]),
+    joinGameSubmit(val) {
+      this.joinGame({
+        name: val.name,
+        gameCode: val.gameCode.join(''),
+      });
+    },
   },
 };
 </script>
@@ -124,6 +150,12 @@ export default {
   top: 5%;
   left: calc(50% - 100px);
   width: 200px;
+}
+
+.github-button {
+  position: absolute;
+  bottom: 20px;
+  left: calc(50% - 63px);
 }
 
 .copy-right {

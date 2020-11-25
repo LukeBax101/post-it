@@ -14,7 +14,7 @@
       ></Header>
       <div class="play-area-body">
         <div class="order-panel" v-if="isOrder">
-          <h4>Order of Play</h4>
+          <h5>Order of Play</h5>
           <b-list-group>
             <b-list-group-item
               v-for="(item, idx) in recommendedOrder"
@@ -30,7 +30,7 @@
             </div>
             →
             <div class="order-item-value">
-            {{ `‏‏‎ ‎‏‏‎ ‎${item.post_it_name}` }}
+            {{ `‏‏‎ ‎‏‏‎ ‎${item.post_it_name}‏‏‎ ‎‏‏‎ ‎` }}
             </div>
             <div
               class="icon-end"
@@ -42,7 +42,8 @@
           </b-list-group>
         </div>
         <div class="question-panel" v-if="!isOrder">
-          <h4>Questions</h4>
+          <h5>Question Notes</h5>
+          <p> Exciting changes coming soon... </p>
         </div>
         <b-button
           class='win-button'
