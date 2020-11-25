@@ -4,6 +4,7 @@ git stash
 git pull
 git stash pop
 cd frontend
+npm i
 npm run build
 cd ..
 docker-compose -f post-it-compose.yml down
