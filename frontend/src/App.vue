@@ -71,6 +71,7 @@
 import { mapActions } from 'vuex';
 import EventBus from './event-bus';
 
+const SYNC_INTERVAL = 60000;
 
 export default {
   name: 'App',
@@ -80,6 +81,8 @@ export default {
       text: '',
       type: '',
       transition: 'fade-out',
+      lastSync: 0,
+      syncInterval: 0,
     };
   },
   mounted() {
@@ -96,6 +99,12 @@ export default {
       next();
     });
     this.getGameData();
+    this.syncInterval = window.setInterval(() => {
+      const now = new Date().getTime();
+      if ((now - this.lastSync) > SYNC_INTERVAL) {
+        this.syncPage();
+      }
+    }, 5000);
   },
   destroyed() {
     EventBus.$off('show-alert');
@@ -104,6 +113,10 @@ export default {
     ...mapActions([
       'getGameData',
     ]),
+  },
+  syncPage() {
+    this.lastSync = new Date().getTime();
+    this.getGameData();
   },
 };
 </script>
