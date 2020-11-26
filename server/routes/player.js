@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/submit-post-it', async (req, res) => {
   try {
-       const add = await submitPostIt(req.body.secretId, req.body.playerId, req.body.postIt);
+       const add = await submitPostIt(req.cookies.secretId, req.body.playerId, req.body.postIt);
        broadcastGame(req.socketio, add.game_id);
        res.json(add);
     } catch (e) {
@@ -15,7 +15,7 @@ router.post('/submit-post-it', async (req, res) => {
 
 router.post('/remove-post-it', async (req, res) => {
   try {
-       const remove = await removePostIt(req.body.secretId, req.body.playerId);
+       const remove = await removePostIt(req.cookies.secretId, req.body.playerId);
        broadcastGame(req.socketio, remove.game_id);
        res.json(remove);
     } catch (e) {
@@ -25,7 +25,7 @@ router.post('/remove-post-it', async (req, res) => {
 
 router.post('/claim-win', async (req, res) => {
   try {
-       const win = await claimWin(req.body.secretId);
+       const win = await claimWin(req.cookies.secretId);
        broadcastGame(req.socketio, win.game_id);
        res.json(win);
     } catch (e) {

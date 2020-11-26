@@ -113,10 +113,10 @@ export default {
     ...mapActions([
       'getGameData',
     ]),
-  },
-  syncPage() {
-    this.lastSync = new Date().getTime();
-    this.getGameData();
+    syncPage() {
+      this.lastSync = new Date().getTime();
+      this.getGameData();
+    },
   },
 };
 </script>

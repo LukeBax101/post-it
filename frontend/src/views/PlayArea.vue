@@ -77,7 +77,6 @@
                 v-model="newQuestionValue"
                 v-on:blur="newQuestionBlurred()"
                 placeholder="Add question here"
-                autofocus
               >
               </b-input>
             </b-list-group-item>

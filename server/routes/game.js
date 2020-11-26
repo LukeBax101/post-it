@@ -39,7 +39,7 @@ router.post('/join', async (req, res) => {
 
 router.post('/start', async (req, res) => {
   try {
-       const start = await startGame(req.body.gameId, req.body.secretId);
+       const start = await startGame(req.body.gameId, req.cookies.secretId);
        broadcastGame(req.socketio, start.game_id);
        res.json(start);
     } catch (e) {
@@ -49,7 +49,7 @@ router.post('/start', async (req, res) => {
 
 router.post('/progress', async (req, res) => {
   try {
-       const progress = await progressGame(req.body.gameId, req.body.secretId);
+       const progress = await progressGame(req.body.gameId, req.cookies.secretId);
        broadcastGame(req.socketio, progress.game_id);
        res.json(progress);
     } catch (e) {
@@ -59,7 +59,7 @@ router.post('/progress', async (req, res) => {
 
 router.post('/results', async (req, res) => {
   try {
-       const results = await goToResults(req.body.gameId, req.body.secretId);
+       const results = await goToResults(req.body.gameId, req.cookies.secretId);
        broadcastGame(req.socketio, results.game_id);
        res.json(results);
     } catch (e) {
@@ -69,7 +69,7 @@ router.post('/results', async (req, res) => {
 
 router.post('/restart', async (req, res) => {
   try {
-       const restart = await restartGame(req.body.gameId, req.body.secretId);
+       const restart = await restartGame(req.body.gameId, req.cookies.secretId);
        broadcastGame(req.socketio, restart.game_id);
        res.json(restart);
     } catch (e) {
@@ -79,7 +79,7 @@ router.post('/restart', async (req, res) => {
 
 router.post('/leave', async (req, res) => {
   try {
-       const leave = await leaveGame(req.body.secretId);
+       const leave = await leaveGame(req.cookies.secretId);
        req.socketio.emit('leave', 'im leavign');
        broadcastGame(req.socketio, leave);
        res.clearCookie('secretId');
@@ -91,7 +91,7 @@ router.post('/leave', async (req, res) => {
 
 router.post('/kick', async (req, res) => {
   try {
-       const kick = await kickPlayer(req.body.gameId, req.body.secretId, req.body.playerId);
+       const kick = await kickPlayer(req.body.gameId, req.cookies.secretId, req.body.playerId);
        broadcastGame(req.socketio, kick);
        res.json(kick);
     } catch (e) {
@@ -101,7 +101,7 @@ router.post('/kick', async (req, res) => {
 
 router.post('/toggle-disable-questions', async (req, res) => {
   try {
-       const toggle = await toggleDisableQuestions(req.body.gameId, req.body.secretId);
+       const toggle = await toggleDisableQuestions(req.body.gameId, req.cookies.secretId);
        broadcastGame(req.socketio, toggle.game_id);
        res.json(toggle);
     } catch (e) {
@@ -109,9 +109,9 @@ router.post('/toggle-disable-questions', async (req, res) => {
     }
 });
 
-router.get('/:secretId', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-       const gameInfo = await getGame(req.params.secretId);
+       const gameInfo = await getGame(req.cookies.secretId);
        res.json(gameInfo);
     } catch (e) {
       res.clearCookie('secretId');

@@ -6,8 +6,14 @@ import router from '@/router';
 
 async function getGameData({ commit }) {
   try {
+    if (!Vue.$cookies.get('secretId') && localStorage.getItem('secretId')) {
+      Vue.$cookies.set('secretId', localStorage.getItem('secretId'));
+    }
     if (Vue.$cookies.get('secretId')) {
-      const req = (await axios.get(`${API_URL}/game/${Vue.$cookies.get('secretId')}`)).data;
+      const req = (await axios.get(`${API_URL}/game`)).data;
+      if (!localStorage.getItem('secretId')) {
+        localStorage.setItem('secretId', Vue.$cookies.get('secretId'));
+      }
       if (req.game) {
         commit('updateGame', req.game);
       }
@@ -24,9 +30,12 @@ async function getGameData({ commit }) {
       router.push('/');
     }
   } catch (e) {
-    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
     if (Vue.$cookies.get('secretId')) {
+      EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
       Vue.$cookies.remove('secretId');
+    }
+    if (localStorage.getItem('secretId')) {
+      localStorage.removeItem('secretId');
     }
     if (router.currentRoute.path !== '/') {
       router.push('/');
@@ -50,9 +59,7 @@ async function joinGame(_, data) {
 async function leaveGame({ commit }) {
   try {
     if (Vue.$cookies.get('secretId')) {
-      await axios.post(`${API_URL}/game/leave`, {
-        secretId: Vue.$cookies.get('secretId'),
-      });
+      await axios.post(`${API_URL}/game/leave`);
     }
     if (router.currentRoute.path !== '/') {
       router.push('/');
@@ -67,7 +74,6 @@ async function kickPlayer({ state }, playerId) {
   try {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/game/kick`, {
-        secretId: Vue.$cookies.get('secretId'),
         gameId: state.game.game_id,
         playerId,
       });
@@ -94,7 +100,6 @@ async function restartGame({ state, commit }) {
         state: 0,
       });
       await axios.post(`${API_URL}/game/restart`, {
-        secretId: Vue.$cookies.get('secretId'),
         gameId: state.game.game_id,
       });
       if (router.currentRoute.path !== '/lobby') {
@@ -110,7 +115,6 @@ async function toggleQuestions({ state }) {
   try {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/game/toggle-disable-questions`, {
-        secretId: Vue.$cookies.get('secretId'),
         gameId: state.game.game_id,
       });
     }
@@ -124,7 +128,6 @@ async function startGame({ state }) {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/game/start`, {
         gameId: state.game.game_id,
-        secretId: Vue.$cookies.get('secretId'),
       });
     }
   } catch (e) {
@@ -137,7 +140,6 @@ async function progressGame({ state }) {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/game/progress`, {
         gameId: state.game.game_id,
-        secretId: Vue.$cookies.get('secretId'),
       });
     }
   } catch (e) {
@@ -150,7 +152,6 @@ async function goToResults({ state }) {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/game/results`, {
         gameId: state.game.game_id,
-        secretId: Vue.$cookies.get('secretId'),
       });
     }
   } catch (e) {
@@ -162,7 +163,6 @@ async function submitPostIt(_, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/player/submit-post-it`, {
-        secretId: Vue.$cookies.get('secretId'),
         playerId: data.playerId,
         postIt: data.postIt,
       });
@@ -176,7 +176,6 @@ async function deletePostIt(_, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/player/remove-post-it`, {
-        secretId: Vue.$cookies.get('secretId'),
         playerId: data.playerId,
       });
     }
@@ -189,9 +188,7 @@ async function deletePostIt(_, data) {
 async function claimWin() {
   try {
     if (Vue.$cookies.get('secretId')) {
-      await axios.post(`${API_URL}/player/claim-win`, {
-        secretId: Vue.$cookies.get('secretId'),
-      });
+      await axios.post(`${API_URL}/player/claim-win`);
     }
   } catch (e) {
     EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
@@ -202,7 +199,6 @@ async function addQuestion({ commit }, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       const [question, questions] = (await axios.post(`${API_URL}/question/new`, {
-        secretId: Vue.$cookies.get('secretId'),
         question: data.question,
       })).data;
       commit('updateQuestions', questions);
@@ -218,7 +214,6 @@ async function removeQuestion({ commit }, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       const questions = (await axios.post(`${API_URL}/question/remove`, {
-        secretId: Vue.$cookies.get('secretId'),
         questionId: data.questionId,
       })).data;
       commit('updateQuestions', questions);
@@ -232,7 +227,6 @@ async function updateQuestion({ commit }, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       const questions = (await axios.post(`${API_URL}/question/update/question`, {
-        secretId: Vue.$cookies.get('secretId'),
         questionId: data.questionId,
         question: data.question,
       })).data;
@@ -247,7 +241,6 @@ async function updateAnswer({ commit }, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       const questions = (await axios.post(`${API_URL}/question/update/answer`, {
-        secretId: Vue.$cookies.get('secretId'),
         questionId: data.questionId,
         answer: data.answer,
       })).data;
@@ -262,7 +255,6 @@ async function updateNotes({ commit }, data) {
   try {
     if (Vue.$cookies.get('secretId')) {
       const questions = (await axios.post(`${API_URL}/question/update/notes`, {
-        secretId: Vue.$cookies.get('secretId'),
         questionId: data.questionId,
         notes: data.notes,
       })).data;
