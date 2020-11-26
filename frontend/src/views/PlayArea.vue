@@ -204,6 +204,22 @@
       orange
       v-on:float-button-clicked="claimWinConfirm()"
     > </FloatButton>
+    <FloatButton
+      v-if="!notYetWon && waitingFor.length > 0"
+      pos="0.5"
+      navBar
+      icon="three-dots"
+      v-on:float-button-clicked="$bvModal.show('guessing-waiting-on-modal')"
+    >
+    </FloatButton>
+    <b-modal id="guessing-waiting-on-modal" scrollable centered title="Waiting for...">
+      <b-list-group>
+      <b-list-group-item
+        v-for="(name) in waitingFor"
+        :key="`waiting-for-${name}`"
+      > {{ name }}</b-list-group-item>
+    </b-list-group>
+    </b-modal>
   </div>
 </template>
 
@@ -256,6 +272,9 @@ export default {
       'questionsEnabled',
       'questions',
     ]),
+    waitingFor() {
+      return this.players.filter((player) => !player.completed_at).map((player) => player.name);
+    },
     hostOptions() {
       return [{
         id: 'leave',

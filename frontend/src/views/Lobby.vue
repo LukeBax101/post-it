@@ -80,6 +80,21 @@
       :fields="selfHost ? hostOptions : playerOptions"
       noSubmit
     ></Modal>
+    <FloatButton
+      v-if="!everyOneAssigned && waitingFor.length > 0 && selfGiven && isAssign"
+      pos="0"
+      icon="three-dots"
+      v-on:float-button-clicked="$bvModal.show('lobby-waiting-on-modal')"
+    >
+    </FloatButton>
+    <b-modal id="lobby-waiting-on-modal" scrollable centered title="Waiting for...">
+      <b-list-group>
+      <b-list-group-item
+        v-for="(name) in waitingFor"
+        :key="`waiting-for-${name}`"
+      > {{ name }}</b-list-group-item>
+    </b-list-group>
+    </b-modal>
   </div>
 </template>
 
@@ -88,6 +103,7 @@ import { mapActions, mapGetters } from 'vuex';
 import Header from '@/components/Header.vue';
 import List from '@/components/List.vue';
 import Modal from '@/components/Modal.vue';
+import FloatButton from '@/components/FloatButton.vue';
 
 
 export default {
@@ -96,6 +112,7 @@ export default {
     Header,
     List,
     Modal,
+    FloatButton,
   },
   data() {
     return {
@@ -122,6 +139,19 @@ export default {
       'gameState',
       'playerId',
     ]),
+    waitingFor() {
+      return this.players
+        .filter((player) => !this.playersThatHaveGiven.includes(player.player_id))
+        .map((player) => player.name);
+    },
+    selfGiven() {
+      return this.playersThatHaveGiven.includes(this.playerId);
+    },
+    playersThatHaveGiven() {
+      return this.players
+        .filter((player) => player.giver_player_id)
+        .map((player) => player.giver_player_id);
+    },
     noFooter() {
       return this.isAssign && !this.everyOneAssigned;
     },
