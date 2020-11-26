@@ -229,7 +229,7 @@ import Header from '@/components/Header.vue';
 import Modal from '@/components/Modal.vue';
 import NavBar from '@/components/NavBar.vue';
 import ConfettiGenerator from 'confetti-js';
-import FloatButton from '@/components/FloatButton.vue';
+// import FloatButton from '@/components/FloatButton.vue';
 import { v4 as uuid } from 'uuid';
 
 
@@ -238,7 +238,7 @@ export default {
   components: {
     Header,
     Modal,
-    FloatButton,
+    // FloatButton,
     NavBar,
   },
   data() {
