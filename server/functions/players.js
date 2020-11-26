@@ -29,7 +29,7 @@ async function submitPostIt(secretId, playerId, postIt) {
     if (player.post_it_name) {
       throw new Error('Player already has a post-it name');
     }
-    const players = await (await Player.where({ ['game_id']: owner.game_id }).fetchAll({ columns: ['player_id', 'giver_player_id'] })).toJSON();
+    const players = await (await Player.where({ ['game_id']: owner.game_id }).fetchAll({ columns: ['player_id', 'post_it_name', 'giver_player_id'] })).toJSON();
     const playersThatHaveGiven = players.filter(player => !!player.giver_player_id).map(player => player.giver_player_id);
     const playersThatHaveNotGiven = players.map(player => player.player_id).filter(player => !playersThatHaveGiven.includes(player));
     if (!playersThatHaveNotGiven.includes(owner.player_id)) {
@@ -73,6 +73,18 @@ async function removePostIt(secretId, playerId) {
       player = await (await playerModel.fetch()).toJSON();
     } catch {
       throw new Error('No player with that id found');
+    }
+    const players = await (await Player.where({ ['game_id']: owner.game_id }).fetchAll({ columns: ['player_id', 'post_it_name', 'giver_player_id'] })).toJSON();
+    const playersThatHaveGiven = players.filter(player => !!player.giver_player_id).map(player => player.giver_player_id);
+    const playersThatHaveNotGiven = players.map(player => player.player_id).filter(player => !playersThatHaveGiven.includes(player));
+    let postPlayersThatHaveNotGiven = playersThatHaveNotGiven;
+    if (player.giver_player_id) {
+      postPlayersThatHaveNotGiven = [...playersThatHaveNotGiven, player.giver_player_id];
+    }
+    const playersThatHaveNotRecieved = players.filter(player => !player.post_it_name).map(player => player.player_id);
+    const postPlayersThatHaveNotReceived = [...playersThatHaveNotRecieved, playerId];
+    if (postPlayersThatHaveNotGiven.length == 1 && postPlayersThatHaveNotReceived.length == 1 && postPlayersThatHaveNotGiven[0] == postPlayersThatHaveNotReceived[0]) {
+      throw new Error('Can\'t leave one person to post-it themselves')
     }
     if (owner.player_id == game.creator_player_id || owner.player_id == player.giver_player_id) {
       player = await (await (await playerModel.set({ ['post_it_name']: null, ['giver_player_id']: null })).save()).toJSON();
