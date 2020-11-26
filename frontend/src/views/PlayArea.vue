@@ -195,7 +195,7 @@
       <li> Am I old? </li>
     </b-modal>
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
-    <FloatButton
+    <!-- <FloatButton
       v-if="notYetWon"
       pos="0"
       icon="check"
@@ -203,8 +203,8 @@
       pulse
       orange
       v-on:float-button-clicked="claimWinConfirm()"
-    > </FloatButton>
-    <FloatButton
+    > </FloatButton> -->
+    <!-- <FloatButton
       v-if="!notYetWon && waitingFor.length > 0"
       pos="0.5"
       navBar
@@ -219,7 +219,7 @@
         :key="`waiting-for-${name}`"
       > {{ name }}</b-list-group-item>
     </b-list-group>
-    </b-modal>
+    </b-modal> -->
   </div>
 </template>
 
