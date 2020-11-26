@@ -42,6 +42,7 @@ export default {
   background: $scheme-dark;
   color: white;
   box-shadow: 1px 5px 10px 3px rgba(130,130,130,0.5);
+  cursor:pointer;
 }
 
 .slide-in-enter-active {
