@@ -13,9 +13,9 @@
         v-on:right-clicked="$bvModal.show('settings-modal')"
       ></Header>
       <div class="play-area-body">
-        <div class="order-panel" v-if="isOrder">
-          <h5>Order of Play</h5>
-          <b-list-group>
+        <div class="order-panel" v-bind:class="{ 'no-bottom-banner': notYetWon}" v-if="isOrder">
+          <h5 class="order-title">Order of Play</h5>
+          <b-list-group class="order-panel-main">
             <b-list-group-item
               v-for="(item, idx) in recommendedOrder"
               v-bind:key="item.player_id"
@@ -41,18 +41,98 @@
             </b-list-group-item>
           </b-list-group>
         </div>
-        <div class="question-panel" v-if="!isOrder">
-          <h5>Question Notes</h5>
-          <p> Exciting changes coming soon... </p>
+        <div class="question-panel" v-bind:class="{ 'no-bottom-banner': notYetWon}" v-if="!isOrder">
+          <h5 class="question-title">Question Log</h5>
+          <b-button
+            class='starter-questions-button'
+            variant="info"
+            v-on:click="$bvModal.show('starter-question-modal')"
+          >
+            Starter Questions
+          </b-button>
+          <div v-if="!questionsEnabled" class="no-question-log">
+            Question log disabled for this game by the host...
+          </div>
+          <div v-if="questionsEnabled" class="question-panel-main">
+          <b-list-group class="question-panel-question">
+            <b-list-group-item
+              v-for="(item) in questions"
+              v-bind:key="item.question_id"
+              class="question-panel-question-item"
+            >
+              <b-input
+                class="question-panel-question-item-text"
+                maxlength="255"
+                v-model="item.question"
+                v-on:blur="questionBlurred(item)"
+              >
+              </b-input>
+            </b-list-group-item>
+            <b-list-group-item
+              class="question-panel-question-item"
+            >
+              <b-input
+                class="question-panel-question-item-text"
+                maxlength="255"
+                v-model="newQuestionValue"
+                v-on:blur="newQuestionBlurred()"
+                placeholder="Add question here"
+                autofocus
+              >
+              </b-input>
+            </b-list-group-item>
+          </b-list-group>
+          <b-list-group class="question-panel-answer">
+            <b-list-group-item
+              v-for="(item) in questions"
+              v-bind:key="item.question_id"
+              class="question-panel-answer-item"
+            >
+            <b-form-group>
+              <b-form-radio-group
+                v-model="item.answer"
+                v-on:change="(val) => answerClicked(item, val)"
+                class="question-panel-answer-item-checkbox"
+                :options="[{ text: 'Yes', value: true}, { text: 'No', value: false }]"
+                buttons
+                button-variant="outline-info"
+                size="sm"
+                name="buttons-2"
+              ></b-form-radio-group>
+            </b-form-group>
+            </b-list-group-item>
+            <b-list-group-item
+              class="question-panel-answer-item"
+            >
+            <b-form-group>
+              <b-form-radio-group
+                v-model="newQuestionAnswer"
+                class="question-panel-answer-item-checkbox"
+                :options="[{ text: 'Yes', value: true}, { text: 'No', value: false }]"
+                buttons
+                button-variant="outline-info"
+                size="sm"
+                name="buttons-2"
+                :key="extraKey"
+              ></b-form-radio-group>
+            </b-form-group>
+            </b-list-group-item>
+          </b-list-group>
+          <b-list-group class="question-panel-info">
+            <b-list-group-item
+              v-for="(item) in questions"
+              v-bind:key="item.question_id"
+              class="question-panel-info-item"
+            >
+            <div
+              v-on:click.stop="showQuestionInfo(item)"
+            >
+              <b-icon icon="pencil"></b-icon>
+            </div>
+            </b-list-group-item>
+          </b-list-group>
         </div>
-        <b-button
-          class='win-button'
-          v-if="notYetWon"
-          variant="info"
-          v-on:click="claimWinConfirm()"
-        >
-          I've got it!
-        </b-button>
+        </div>
         <div
           v-if="!notYetWon"
           class='lobby-text pulse'
@@ -92,7 +172,39 @@
         <div>{{ playerInfoGiver }}</div>
       </div>
     </b-modal>
+    <b-modal id="question-info-modal" centered title="Question Notes">
+      <div style="display: flex; flex-direction: column;">
+        <b-form-textarea
+          id="textarea"
+          v-model="questionInfoNotes"
+          placeholder="Add some notes..."
+          rows="3"
+          max-rows="6"
+          maxlength="255"
+          v-on:blur="notesBlurred()"
+        ></b-form-textarea>
+      </div>
+    </b-modal>
+    <b-modal id="starter-question-modal" scrollable centered title="Starter Questions">
+      <p> Here are a couple of example questions to help you get moving if you're stuck: </p>
+      <li> Am I alive? </li>
+      <li> Am I famous? </li>
+      <li> Am I a human? </li>
+      <li> Am I in the ... industry? </li>
+      <li> Am I real? </li>
+      <li> Am I male/female? </li>
+      <li> Am I old? </li>
+    </b-modal>
     <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+    <FloatButton
+      v-if="notYetWon"
+      pos="0"
+      icon="check"
+      navBar
+      pulse
+      orange
+      v-on:float-button-clicked="claimWinConfirm()"
+    > </FloatButton>
   </div>
 </template>
 
@@ -102,12 +214,16 @@ import Header from '@/components/Header.vue';
 import Modal from '@/components/Modal.vue';
 import NavBar from '@/components/NavBar.vue';
 import ConfettiGenerator from 'confetti-js';
+import FloatButton from '@/components/FloatButton.vue';
+import { v4 as uuid } from 'uuid';
+
 
 export default {
   name: 'PlayArea',
   components: {
     Header,
     Modal,
+    FloatButton,
     NavBar,
   },
   data() {
@@ -124,7 +240,12 @@ export default {
       navBarIcons: ['card-list', 'pencil-square'],
       isOrder: true,
       playerInfo: '',
+      questionInfo: null,
+      questionInfoNotes: '',
       confetti: null,
+      newQuestionValue: '',
+      newQuestionAnswer: null,
+      extraKey: uuid(),
     };
   },
   computed: {
@@ -133,6 +254,8 @@ export default {
       'players',
       'recommendedOrder',
       'playerId',
+      'questionsEnabled',
+      'questions',
     ]),
     hostOptions() {
       return [{
@@ -155,6 +278,13 @@ export default {
         label: 'Restart game',
         variant: 'info',
         onClick: () => this.restartGameConfirm(),
+        type: 'button',
+      },
+      {
+        id: 'results',
+        label: 'Go to Results',
+        variant: 'info',
+        onClick: () => this.goToResults(),
         type: 'button',
       }];
     },
@@ -186,7 +316,45 @@ export default {
       'restartGame',
       'kickPlayer',
       'claimWin',
+      'goToResults',
+      'updateQuestion',
+      'addQuestion',
+      'removeQuestion',
+      'updateAnswer',
+      'updateNotes',
     ]),
+    notesBlurred() {
+      if (this.questionInfo && this.questionInfoNotes) {
+        this.updateNotes({
+          questionId: this.questionInfo.question_id,
+          notes: this.questionInfoNotes,
+        });
+      }
+    },
+    questionBlurred(item) {
+      if (item.question) {
+        this.updateQuestion({ question: item.question, questionId: item.question_id });
+      } else {
+        this.removeQuestion({ questionId: item.question_id });
+      }
+    },
+    async newQuestionBlurred() {
+      if (this.newQuestionValue) {
+        const question = await this.addQuestion({ question: this.newQuestionValue });
+        if (question && this.newQuestionAnswer !== null) {
+          await this.updateAnswer({
+            questionId: question.question_id,
+            answer: this.newQuestionAnswer,
+          });
+          this.newQuestionAnswer = null;
+          this.extraKey = uuid();
+        }
+        this.newQuestionValue = '';
+      }
+    },
+    answerClicked(item, answer) {
+      this.updateAnswer({ questionId: item.question_id, answer });
+    },
     showConfetti() {
       this.confetti.render();
       setTimeout(() => {
@@ -196,6 +364,11 @@ export default {
     showPlayerInfo(player) {
       this.playerInfo = player;
       this.$bvModal.show('player-info-modal');
+    },
+    showQuestionInfo(question) {
+      this.questionInfo = question;
+      this.questionInfoNotes = question.notes;
+      this.$bvModal.show('question-info-modal');
     },
     navBarClicked(idx) {
       this.isOrder = idx === 0;
@@ -284,103 +457,206 @@ export default {
   pointer-events: none;
 }
 
-.play-area {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
 .overlay{
   width: 100%;
   height: 100%;
   color: $overlay-load;
 }
 
-.play-area-body {
-  display: grid;
+.play-area {
+  position: absolute;
   width: 100%;
-  height: calc(100% - 100px);
-  grid-template-columns: 50% 50%;
-  grid-template-rows: 40px 120px 60px auto 60px;
-}
+  height: 100%;
 
-.order-panel {
-  grid-column: 1 / span 2;
-  grid-row: 1 / span 4;
-}
+  &-body {
+    display: grid;
+    width: 100%;
+    height: calc(100% - 100px);
+    grid-template-rows: auto 50px;
 
-.question-panel {
-  grid-column: 1 / span 2;
-  grid-row: 1 / span 4;
-}
+    .question-panel {
+      grid-row: 1;
+      display: grid;
+      grid-template-rows: 40px 60px calc(100vh - 250px);
 
-.order-item {
-  display: flex;
-  justify-content: space-between;
-}
+      &.no-bottom-banner {
+        grid-template-rows: 40px 60px calc(100vh - 200px);
+      }
 
-.order-item-name {
-  flex-grow: 2;
-  max-width: 100px;
-  overflow-x: scroll;
-  white-space: nowrap;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
-}
+      .question-title {
+        grid-row: 1;
+        align-self: center;
+      }
 
-.order-item-value {
-  flex-grow: 2;
-  max-width: 100px;
-  overflow-x: scroll;
-  white-space: nowrap;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5% 95%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 5% 95%, transparent 100%);
-}
+      .starter-questions-button {
+        grid-row: 2;
+        margin: 10px;
+      }
 
-.question-area {
-  grid-row: 4;
-  grid-column: 1 / span 2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+      .no-question-log {
+        grid-row: 3;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
 
-.win-button {
-  grid-row: 5;
-  grid-column: 1 / span 2;
-  margin: 10px;
-}
+      .question-panel-main {
+        grid-row: 3;
+        grid-template-columns: calc(100% - 150px) 100px 50px;
+        display: grid;
+        overflow-y: scroll;
+        -webkit-mask-image:
+          linear-gradient(to bottom, transparent 0%, black 2% 98%, transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0%, black 2% 98%, transparent 100%);
+        padding-bottom: 5px;
+        padding-top: 5px;
+      }
 
-.tutorial-header {
-  grid-row: 1;
-  grid-column: 1 / span 2;
-  align-self: start;
-  font-family: cursive;
-}
+      &-question {
+        margin-left: 10px;
+        grid-column: 1;
 
-.recommended-order {
-  grid-row: 3;
-  grid-column: 1;
-  margin: 10px;
-  font-size: 13px;
-  margin-right: 5px;
-}
+        :first-child {
+          border-top-right-radius: 0px !important;
+        }
 
-.starter-questions {
-  grid-row: 3;
-  grid-column: 2;
-  margin-left: 5px;
-  margin: 10px;
-  font-size: 13px;
-}
+        :last-child {
+          border-bottom-right-radius: 0px !important;
+        }
 
-.lobby-text {
-  grid-column: 1 / span 2;
-  display: flex;
-  flex-direction: rows;
-  justify-content: center;
-  align-items: center;
-  margin: 5px;
-  font-size: 17px;
+        &-item {
+          padding: 5px;
+          height: 50px;
+
+          &-text {
+            overflow-x: scroll;
+            padding-left: 5px;
+            padding-right: 5px;
+            white-space: nowrap;
+            border-style: none;
+            -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+            mask-image: linear-gradient(to right, black 90%, transparent 100%);
+          }
+        }
+      }
+
+      &-answer {
+        grid-column: 2;
+
+        :first-child {
+          border-top-right-radius: 0px !important;
+          border-top-left-radius: 0px !important;
+        }
+
+        :last-child {
+          border-bottom-left-radius: 0px !important;
+        }
+
+        :first-child:last-child {
+          border-top-right-radius: 0.25rem !important;
+        }
+
+        &-item {
+          padding: 0px;
+          height: 50px;
+
+          &-checkbox {
+            padding: 10px;
+            height: 50px;
+
+            :first-child {
+              border-top-left-radius: 0.25rem !important;
+              width: 37px;
+            }
+
+            :last-child {
+              border-bottom-right-radius: 0.25rem !important;
+              width: 37px;
+            }
+          }
+        }
+      }
+
+      &-info {
+        grid-column: 3;
+        margin-right: 10px;
+
+        :first-child {
+          border-top-left-radius: 0px !important;
+        }
+
+        :last-child {
+          border-bottom-left-radius: 0px !important;
+        }
+
+        &-item {
+          padding-left: 5px;
+          padding-right: 5px;
+          height: 50px;
+        }
+      }
+    }
+
+    .order-panel {
+      grid-row: 1;
+      display: grid;
+      grid-template-rows: 40px calc(100vh - 190px);
+
+      &.no-bottom-banner {
+        grid-template-rows: 40px calc(100vh - 140px);
+      }
+
+      .order-title {
+        grid-row: 1;
+        align-self: center;
+      }
+
+      .order-panel-main {
+        grid-row: 2;
+        overflow-y: scroll;
+        -webkit-mask-image:
+          linear-gradient(to bottom, transparent 0%, black 2% 98%, transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0%, black 2% 98%, transparent 100%);
+        padding-bottom: 5px;
+        padding-top: 5px;
+      }
+
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+
+        &-name {
+          flex-grow: 2;
+          max-width: 100px;
+          overflow-x: scroll;
+          white-space: nowrap;
+          -webkit-mask-image:
+            linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, black 10% 90%, transparent 100%);
+        }
+
+        &-value {
+          flex-grow: 2;
+          max-width: 100px;
+          overflow-x: scroll;
+          white-space: nowrap;
+          -webkit-mask-image:
+            linear-gradient(to right, transparent 0%, black 5% 95%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, black 5% 95%, transparent 100%);
+        }
+      }
+    }
+
+    .lobby-text {
+      grid-row: 2;
+      display: flex;
+      flex-direction: rows;
+      justify-content: center;
+      align-items: center;
+      margin: 5px;
+      font-size: 17px;
+    }
+  }
 }
 </style>

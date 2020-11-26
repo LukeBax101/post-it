@@ -26,7 +26,7 @@ async function socket_gameUpdate({ state, commit }, data) {
         if (myPlayer && otherPlayers) {
           let postItName = null;
           if (myPlayer.post_it_name) {
-            postItName = (state.game.state !== 3) ? '?' : myPlayer.post_it_name;
+            postItName = (state.game.state !== 3 && !myPlayer.completed_at) ? '?' : myPlayer.post_it_name;
           }
           commit('updatePlayers', [
             ...otherPlayers,

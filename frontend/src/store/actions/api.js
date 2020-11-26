@@ -88,16 +88,18 @@ async function newGame(_, data) {
 
 async function restartGame({ state, commit }) {
   try {
-    await axios.post(`${API_URL}/game/restart`, {
-      secretId: Vue.$cookies.get('secretId'),
-      gameId: state.game.game_id,
-    });
-    commit('updateGame', {
-      ...state.game,
-      state: 0,
-    });
-    if (router.currentRoute.path !== '/lobby') {
-      router.push('/lobby');
+    if (Vue.$cookies.get('secretId')) {
+      commit('updateGame', {
+        ...state.game,
+        state: 0,
+      });
+      await axios.post(`${API_URL}/game/restart`, {
+        secretId: Vue.$cookies.get('secretId'),
+        gameId: state.game.game_id,
+      });
+      if (router.currentRoute.path !== '/lobby') {
+        router.push('/lobby');
+      }
     }
   } catch (e) {
     EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
@@ -134,6 +136,19 @@ async function progressGame({ state }) {
   try {
     if (Vue.$cookies.get('secretId')) {
       await axios.post(`${API_URL}/game/progress`, {
+        gameId: state.game.game_id,
+        secretId: Vue.$cookies.get('secretId'),
+      });
+    }
+  } catch (e) {
+    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
+  }
+}
+
+async function goToResults({ state }) {
+  try {
+    if (Vue.$cookies.get('secretId')) {
+      await axios.post(`${API_URL}/game/results`, {
         gameId: state.game.game_id,
         secretId: Vue.$cookies.get('secretId'),
       });
@@ -183,6 +198,81 @@ async function claimWin() {
   }
 }
 
+async function addQuestion({ commit }, data) {
+  try {
+    if (Vue.$cookies.get('secretId')) {
+      const [question, questions] = (await axios.post(`${API_URL}/question/new`, {
+        secretId: Vue.$cookies.get('secretId'),
+        question: data.question,
+      })).data;
+      commit('updateQuestions', questions);
+      return question;
+    }
+  } catch (e) {
+    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
+  }
+  return null;
+}
+
+async function removeQuestion({ commit }, data) {
+  try {
+    if (Vue.$cookies.get('secretId')) {
+      const questions = (await axios.post(`${API_URL}/question/remove`, {
+        secretId: Vue.$cookies.get('secretId'),
+        questionId: data.questionId,
+      })).data;
+      commit('updateQuestions', questions);
+    }
+  } catch (e) {
+    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
+  }
+}
+
+async function updateQuestion({ commit }, data) {
+  try {
+    if (Vue.$cookies.get('secretId')) {
+      const questions = (await axios.post(`${API_URL}/question/update/question`, {
+        secretId: Vue.$cookies.get('secretId'),
+        questionId: data.questionId,
+        question: data.question,
+      })).data;
+      commit('updateQuestions', questions);
+    }
+  } catch (e) {
+    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
+  }
+}
+
+async function updateAnswer({ commit }, data) {
+  try {
+    if (Vue.$cookies.get('secretId')) {
+      const questions = (await axios.post(`${API_URL}/question/update/answer`, {
+        secretId: Vue.$cookies.get('secretId'),
+        questionId: data.questionId,
+        answer: data.answer,
+      })).data;
+      commit('updateQuestions', questions);
+    }
+  } catch (e) {
+    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
+  }
+}
+
+async function updateNotes({ commit }, data) {
+  try {
+    if (Vue.$cookies.get('secretId')) {
+      const questions = (await axios.post(`${API_URL}/question/update/notes`, {
+        secretId: Vue.$cookies.get('secretId'),
+        questionId: data.questionId,
+        notes: data.notes,
+      })).data;
+      commit('updateQuestions', questions);
+    }
+  } catch (e) {
+    EventBus.$emit('show-alert', { text: `Error: ${e.response.data}` });
+  }
+}
+
 
 // eslint-disable-next-line
 async function wait(time) {
@@ -218,4 +308,10 @@ export const api = {
   submitPostIt,
   deletePostIt,
   claimWin,
+  goToResults,
+  addQuestion,
+  removeQuestion,
+  updateQuestion,
+  updateAnswer,
+  updateNotes,
 };

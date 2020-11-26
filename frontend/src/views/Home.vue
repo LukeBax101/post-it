@@ -18,12 +18,14 @@
       >
       Check out the code
     </github-button>
-    <FloatButton
-      bottom
-      icon="question"
-      v-on:float-button-clicked="$bvModal.show('help-modal');"
-    >
-    </FloatButton>
+    <transition name="grow">
+      <FloatButton
+        pos="0"
+        icon="question"
+        v-on:float-button-clicked="$bvModal.show('help-modal');"
+      >
+      </FloatButton>
+    </transition>
     <div class="copy-right">
       <span> Copyright © Luke Baxter 2020 </span>
     </div>

@@ -12,6 +12,7 @@ var http = require('http');
 const bookshelf = require('./db/bookshelf');
 const game = require('./routes/game');
 const player = require('./routes/player');
+const question = require('./routes/question');
 
 const { cleanDB } = require('./functions/games');
 
@@ -42,6 +43,10 @@ app.use('/player', (req, res, next) => {
     req.socketio = io;
     next();
 }, player);
+
+app.use('/question', (req, res, next) => {
+    next();
+}, question);
 
 setInterval(cleanDB, 86400000);
 

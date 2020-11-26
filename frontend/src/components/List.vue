@@ -13,12 +13,12 @@
         class="item"
       >
       <div class="button-container"
-      v-bind:class="{ 'btn-block-margin': isLobby || currentSelectedPlayer !== item}">
+      v-bind:class="{ 'btn-block-margin': isLobby || currentPlayer !== item}">
         <b-button
           block
           variant="light"
           class="button-item"
-          v-on:click="itemClicked(item)"
+          v-on:click="itemClicked(item, idx)"
           v-bind:data-index="idx"
           v-bind:class="{
             'self-item': item.player_id === playerId,
@@ -77,7 +77,7 @@
           </div>
         </b-button>
       </div>
-      <div class="post-it" v-if="!isLobby && currentSelectedPlayer === item">
+      <div class="post-it" v-if="!isLobby && currentPlayer === item">
         <b-input-group
           class="post-it-input"
         >
@@ -85,10 +85,11 @@
             v-model="currentSelectedValue"
             class="post-it-input"
             placeholder="Enter a name or item"
+            maxlength="255"
+            autofocus
+            :id="`post-it-input-${idx}`"
+            v-on:keyup.enter="submitPostitClicked()"
           ></b-form-input>
-          <!-- <b-form-invalid-feedback id="input-live-feedback">
-              Enter at least 3 letters
-          </b-form-invalid-feedback> -->
           <b-input-group-append>
             <b-button
               class="post-it-input"
@@ -139,7 +140,7 @@ export default {
   },
   data() {
     return {
-      currentSelectedPlayer: null,
+      currentSelectedPlayerId: null,
       currentSelectedValue: '',
       playerInfo: '',
     };
@@ -190,6 +191,18 @@ export default {
         .find((storedPlayer) => storedPlayer.player_id === this.playerInfo.giver_player_id);
       return giverPlayer ? giverPlayer.name : 'Unknown';
     },
+    currentPlayer() {
+      if (!this.currentSelectedPlayerId) return null;
+      return this.players
+        .find((player) => player.player_id === this.currentSelectedPlayerId);
+    },
+  },
+  watch: {
+    players() {
+      if (!this.canPostIt.includes(this.currentSelectedPlayerId)) {
+        this.currentSelectedPlayerId = null;
+      }
+    },
   },
   methods: {
     ...mapActions([
@@ -210,17 +223,22 @@ export default {
         EventBus.$emit('show-alert', { text: 'Can\'t leave one person to post-it themselves', type: 'warning' });
       }
     },
-    itemClicked(item) {
-      if (this.canPostIt.includes(item.player_id)) {
-        this.currentSelectedPlayer = item;
+    itemClicked(item, idx) {
+      if (this.canPostIt.includes(item.player_id)
+        && this.currentSelectedPlayerId !== item.player_id) {
+        this.currentSelectedPlayerId = item.player_id;
         this.currentSelectedValue = '';
       }
+      const inputBox = document.getElementById(`post-it-input-${idx}`);
+      if (inputBox) inputBox.focus();
     },
     submitPostitClicked() {
-      this.submitPostIt({
-        playerId: this.currentSelectedPlayer.player_id,
-        postIt: this.currentSelectedValue,
-      });
+      if (this.currentSelectedValue && this.currentSelectedPlayerId) {
+        this.submitPostIt({
+          playerId: this.currentSelectedPlayerId,
+          postIt: this.currentSelectedValue,
+        });
+      }
     },
     beforeEnter(el) {
       const element = el;

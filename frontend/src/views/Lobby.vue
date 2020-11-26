@@ -159,7 +159,7 @@ export default {
       return this.gameState >= 1;
     },
     lobbyText() {
-      return this.selfHost ? 'Enable questions:' : 'Waiting for the host to start the game...';
+      return this.selfHost ? 'Enable question log:' : 'Waiting for the host to start the game...';
     },
     questions: {
       // getter
@@ -186,7 +186,7 @@ export default {
       'deletePostIt',
     ]),
     async playerKickedConfirm(player) {
-      const confirmed = await this.$bvModal.msgBoxConfirm(`Are you sure you want to kick ${player.name}?`, {
+      const confirmed = await this.$bvModal.msgBoxConfirm(`Are you sure you want to kick out ${player.name}?`, {
         title: 'Are you sure?',
         size: 'sm',
         buttonSize: 'sm',
@@ -218,7 +218,6 @@ export default {
       }
     },
     async postItDeleteConfirm(player) {
-      console.log(player);
       const confirmed = await this.$bvModal.msgBoxConfirm('Are you sure you want to delete this post-it?', {
         title: 'Are you sure?',
         size: 'sm',

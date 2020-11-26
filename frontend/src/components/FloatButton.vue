@@ -1,7 +1,8 @@
 <template>
     <button
       class="float-button"
-      v-bind:class="{'bottom': bottom}"
+      v-bind:style="{ 'bottom' : `${(navBar ? 50 : 0) + 20 + (Number(pos) * 65)}px`}"
+      v-bind:class="{ 'pulse' : !!pulse, 'orange': orange }"
       v-on:click="() => clicked()"
     >
       <b-icon scale="1.8" :icon="icon"></b-icon>
@@ -13,7 +14,10 @@ export default {
   name: 'FloatButton',
   props: {
     icon: String,
-    bottom: Boolean,
+    pos: String,
+    pulse: Boolean,
+    orange: Boolean,
+    navBar: Boolean,
   },
   methods: {
     clicked() {
@@ -40,10 +44,6 @@ export default {
   box-shadow: 1px 5px 10px 3px rgba(130,130,130,0.5);
 }
 
-.bottom {
-  bottom: 20px;
-}
-
 .slide-in-enter-active {
   transition: all .5s ease;
 }
@@ -52,5 +52,32 @@ export default {
 }
 .slide-in-enter, .slide-in-leave-to {
   transform: scale(0.5);
+}
+
+.orange {
+  background: rgba(255, 121, 63, 1);
+}
+
+.pulse.orange {
+  background: rgba(255, 121, 63, 1);
+  box-shadow: 0 0 0 0 rgba(255, 121, 63, 1);
+  animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-orange {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 121, 63, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 121, 63, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 121, 63, 0);
+  }
 }
 </style>

@@ -231,6 +231,31 @@ async function progressGame(gameId, secretId) {
   }
 }
 
+async function goToResults(gameId, secretId) {
+  if (gameId && secretId) {
+    const gameModel = await new Game({ ['game_id']: gameId });
+    let game;
+    try {
+      game = await (await gameModel.fetch()).toJSON();
+    } catch (err) {
+      throw new Error('No game with that id found');
+    }
+    let owner;
+    try {
+      owner = await (await (await new Player({ ['secret_id']: secretId })).fetch()).toJSON();
+    } catch {
+      throw new Error('No player with that key found');
+    }
+    if (owner.player_id == game.creator_player_id) {
+      return await setGameState(gameId, 3)
+    } else {
+      throw new Error('Player must be game host');
+    }
+  } else {
+    throw new Error('Please provide a gameId and the owner key');
+  }
+}
+
 
 async function restartGame(gameId, secretId) {
   if (gameId && secretId) {
@@ -290,7 +315,7 @@ async function getGame(secretId) {
     const questions = await (await Question.where({ ['player_id']: owner.player_id }).fetchAll({ columns: ['question_id', 'question', 'answer', 'notes', 'created_at'] })).toJSON();
     let postItName = null;
     if (owner.post_it_name) {
-      postItName = (game.state !== 3) ? '?' : owner.post_it_name;
+      postItName = (game.state !== 3 && !owner.completed_at) ? '?' : owner.post_it_name;
     }
     return {
       game,
@@ -353,6 +378,10 @@ async function deletePlayer(playerId) {
         console.log(err.message);
       }
       await Player.where('player_id', playerId).destroy({ require: false });
+      const players = await (await Player.where({ ['game_id']: player.game_id }).where('completed_at', null).fetchAll()).toJSON();
+      if (players.length == 0) {
+        await setGameState(player.game_id, 3);
+      }
   } else {
     throw new Error('PlayerId must be defined');
   }
@@ -406,6 +435,7 @@ module.exports = {
     getGame,
     leaveGame,
     setGameState,
+    goToResults,
     kickPlayer,
     toggleDisableQuestions,
     cleanDB,

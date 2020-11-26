@@ -1,5 +1,5 @@
 const express = require('express');
-const { newGame, joinGame, startGame, progressGame, restartGame, getGame, leaveGame, kickPlayer, toggleDisableQuestions, broadcastGame } = require('../functions/games');
+const { newGame, joinGame, startGame, progressGame, goToResults, restartGame, getGame, leaveGame, kickPlayer, toggleDisableQuestions, broadcastGame } = require('../functions/games');
 const router = express.Router();
 
 
@@ -57,6 +57,16 @@ router.post('/progress', async (req, res) => {
     }
 });
 
+router.post('/results', async (req, res) => {
+  try {
+       const results = await goToResults(req.body.gameId, req.body.secretId);
+       broadcastGame(req.socketio, results.game_id);
+       res.json(results);
+    } catch (e) {
+      res.status(400).send(e.message);
+    }
+});
+
 router.post('/restart', async (req, res) => {
   try {
        const restart = await restartGame(req.body.gameId, req.body.secretId);
@@ -70,7 +80,6 @@ router.post('/restart', async (req, res) => {
 router.post('/leave', async (req, res) => {
   try {
        const leave = await leaveGame(req.body.secretId);
-       console.log(req.socketio);
        req.socketio.emit('leave', 'im leavign');
        broadcastGame(req.socketio, leave);
        res.clearCookie('secretId');
@@ -83,9 +92,6 @@ router.post('/leave', async (req, res) => {
 router.post('/kick', async (req, res) => {
   try {
        const kick = await kickPlayer(req.body.gameId, req.body.secretId, req.body.playerId);
-       console.log('response');
-       console.log(kick);
-       console.log('response 2');
        broadcastGame(req.socketio, kick);
        res.json(kick);
     } catch (e) {

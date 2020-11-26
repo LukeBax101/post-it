@@ -10,11 +10,16 @@ export const getters = {
     return 0;
   }),
   playerResults: (state) => [...state.players].sort((a, b) => {
-    if (!a.completed_at || !b.completed_at) return 0;
+    if (!a.completed_at && b.completed_at) return 1;
+    if (!b.completed_at && a.completed_at) return -1;
+    if (!a.completed_at && !b.completed_at) return 0;
     return new Date(a.completed_at) - new Date(b.completed_at);
   }),
   playerId: (state) => state.playerId,
-  questions: (state) => state.questions,
+  questions: (state) => state.questions.sort((a, b) => {
+    if (!a.created_at || !b.created_at) return 0;
+    return new Date(a.created_at) - new Date(b.created_at);
+  }),
   gameId: (state) => state.game.game_id,
   gameCode: (state) => state.game.game_code,
   gameState: (state) => state.game.state,

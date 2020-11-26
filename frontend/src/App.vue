@@ -6,14 +6,6 @@
   <transition :name="transition">
     <router-view class="router"/>
   </transition>
-  <transition name="grow">
-    <FloatButton
-      v-if="showFloatButton"
-      icon="plus"
-      v-on:float-button-clicked="floatButtonClicked"
-    >
-    </FloatButton>
-  </transition>
   <b-modal id="help-modal" scrollable centered title="Help">
     <h4> What is the Post-it game? </h4>
     <p> The post-it game is a simple guessing game where each palyer assigns a name
@@ -49,8 +41,8 @@
        you've asked (if the host has enabled it) or get recommended questions
        for those new to the game. </li>
     <li> Once you've narrowed down your options and guessed your post-it
-      successfully then click <b> I've got it </b> to claim your finishing position
-      in the group. </li>
+      successfully then click the <b> Tick </b> in the lower right corner to
+      claim your finishing position in the group. </li>
     <li> Once everyone has guessed their post-it, the results page will show the
       winners (and losers) as well as how long each player took to guess! </li>
     <li> The host can then click <b> Play again! </b> to go back to the lobby and
@@ -65,8 +57,8 @@
     <li> <b>Restart game</b> - Restarts a given game back to the lobby stage
       (all existing post-its will be lost). </li>
     <li> <b> Leave game </b> - Leaves the current game as assigns someone else as host .</li>
-    <li> <b> Go to results </b> - Move directly to the results page regardless of
-      whether all players have guessed or not. </li>
+    <li> <b> Go to Results </b> - Move directly to the results page regardless of
+      whether all players have guessed their post-it or not. </li>
     <p> The host also has the power to remove any post-it they see fit whilst in
        the post-it assign phase. They are also responsible for starting the game
         once everyone is in the lobby and progressing the game once everyone has
@@ -77,15 +69,11 @@
 
 <script>
 import { mapActions } from 'vuex';
-import FloatButton from '@/components/FloatButton.vue';
 import EventBus from './event-bus';
 
 
 export default {
   name: 'App',
-  components: {
-    FloatButton,
-  },
   data() {
     return {
       show: 0,
@@ -112,18 +100,10 @@ export default {
   destroyed() {
     EventBus.$off('show-alert');
   },
-  computed: {
-    showFloatButton() {
-      return false;
-    },
-  },
   methods: {
     ...mapActions([
       'getGameData',
     ]),
-    floatButtonClicked() {
-      console.log('float clicked');
-    },
   },
 };
 </script>

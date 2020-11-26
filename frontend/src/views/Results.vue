@@ -107,17 +107,19 @@ export default {
       'playerResults',
     ]),
     results() {
-      const baseTime = new Date(this.playerResults[0].completed_at);
+      const baseTime = this.playerResults[0]
+        ? new Date(this.playerResults[0].completed_at) : null;
       return this.playerResults.map((player, idx) => {
+        if (!player) return null;
         const giverPlayer = this.players.find((play) => play.giver_player_id === player.player_id);
         return {
           pos: this.genPos(idx + 1),
           name: player.name.length > 18 ? `${player.name.slice(0, 18)}...` : player.name,
           postIt: `‏‏‎ ‎‏‏‎ ‎${player.post_it_name}`,
-          split: this.genSplit(new Date(player.completed_at) - baseTime),
+          split: baseTime && player.completed_at ? this.genSplit(new Date(player.completed_at) - baseTime) : '--:--',
           giverPlayer: giverPlayer ? `‏‏‎ ‎‏‏‎ ‎${giverPlayer.name}‏‏‎ ‎‏‏‎ ‎` : 'Unknown',
         };
-      });
+      }).filter((x) => !!x);
     },
     hostOptions() {
       return [{
@@ -222,6 +224,9 @@ export default {
   width: 100%;
   height: calc(100% - 50px);
   grid-template-rows: 30px auto 60px;
+  overflow-y: scroll;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5% 97%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 5% 97%, transparent 100%);
 }
 
 .results-table {

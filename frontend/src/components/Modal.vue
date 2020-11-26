@@ -44,6 +44,7 @@
               maxlength=1
               :autofocus="index === 1"
               v-on:update="(val) => fieldUpdated(field.id, val, index)"
+              v-on:keydown.delete="backSpacePressed(field.id, index)"
             >
             </b-form-input>
           </div>
@@ -72,6 +73,7 @@
             :state="validity[field.id]"
             required
             :autofocus="idx === 0"
+            maxlength="255"
             v-on:update="(val) => fieldUpdated(field.id, val)"
           >
           </b-form-input>
@@ -121,8 +123,10 @@ export default {
         const newVal = this.values[id];
         newVal[idx - 1] = val;
         Vue.set(this.values, id, newVal);
-        const nextBox = document.getElementById(`${id}-code-${idx + 1}`);
-        if (nextBox) nextBox.focus();
+        if (val !== '') {
+          const nextBox = document.getElementById(`${id}-code-${idx + 1}`);
+          if (nextBox) nextBox.focus();
+        }
       } else {
         Vue.set(this.values, id, val);
       }
@@ -154,6 +158,12 @@ export default {
         this.$bvModal.hide(this.id);
       });
     },
+    backSpacePressed(id, idx) {
+      if (this.values[id][idx - 1] === '') {
+        const prevBox = document.getElementById(`${id}-code-${idx - 1}`);
+        if (prevBox) prevBox.focus();
+      }
+    },
   },
 };
 </script>
@@ -167,6 +177,7 @@ export default {
 
 .modal-code-text {
   flex-basis: 35px;
+  max-width: 35px;
   padding: 11px !important;
   margin: 2px;
 }
