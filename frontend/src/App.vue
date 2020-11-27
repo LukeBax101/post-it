@@ -106,6 +106,9 @@ export default {
       }
     }, 5000);
     document.styleSheets[0].insertRule('#app:hover {}', 0);
+    this.setDocHeight();
+    window.addEventListener('resize', () => this.setDocHeight());
+    window.addEventListener('orientationchange', () => this.setDocHeight());
   },
   destroyed() {
     EventBus.$off('show-alert');
@@ -117,6 +120,9 @@ export default {
     syncPage() {
       this.lastSync = new Date().getTime();
       this.getGameData();
+    },
+    setDocHeight() {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight / 100}px`);
     },
   },
 };

@@ -495,10 +495,10 @@ export default {
     .question-panel {
       grid-row: 1;
       display: grid;
-      grid-template-rows: 40px 60px calc(100vh - 250px);
+      grid-template-rows: 40px 60px calc((var(--vh, 1vh) * 100) - 250px);
 
       &.no-bottom-banner {
-        grid-template-rows: 40px 60px calc(100vh - 200px);
+        grid-template-rows: 40px 60px calc((var(--vh, 1vh) * 100) - 200px);
       }
 
       .question-title {
@@ -619,10 +619,10 @@ export default {
     .order-panel {
       grid-row: 1;
       display: grid;
-      grid-template-rows: 40px calc(100vh - 190px);
+      grid-template-rows: 40px calc((var(--vh, 1vh) * 100) - 190px);
 
       &.no-bottom-banner {
-        grid-template-rows: 40px calc(100vh - 140px);
+        grid-template-rows: 40px calc((var(--vh, 1vh) * 100) - 140px);
       }
 
       .order-title {
