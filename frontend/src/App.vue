@@ -105,6 +105,7 @@ export default {
         this.syncPage();
       }
     }, 5000);
+    document.getElementById('app').focus();
   },
   destroyed() {
     EventBus.$off('show-alert');
