@@ -105,7 +105,7 @@ export default {
         this.syncPage();
       }
     }, 5000);
-    document.getElementById('app').focus();
+    document.styleSheets[0].insertRule('#app:hover {}', 0);
   },
   destroyed() {
     EventBus.$off('show-alert');
