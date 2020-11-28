@@ -469,7 +469,7 @@ export default {
 .confetti-canvas {
   position: absolute;
   top: 0px;
-  height: 100vh;
+  height: calc((var(--vh, 1vh) * 100));
   left: 0px;
   width: 100vw;
   pointer-events: none;

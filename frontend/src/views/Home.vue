@@ -27,7 +27,7 @@
       </FloatButton>
     </transition>
     <div class="copy-right">
-      <span> Copyright © Luke Baxter 2020 </span>
+      <span> Copyright © Luke Baxter 2021 - v{{version}}</span>
     </div>
     <Modal
       id = "join-game-modal"
@@ -60,6 +60,7 @@ export default {
   },
   data() {
     return {
+      version: '1.02',
       newGameModal: [{
         id: 'name',
         label: 'Your Name',
