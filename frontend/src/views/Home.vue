@@ -60,7 +60,7 @@ export default {
   },
   data() {
     return {
-      version: '1.02',
+      version: '1.0',
       newGameModal: [{
         id: 'name',
         label: 'Your Name',
