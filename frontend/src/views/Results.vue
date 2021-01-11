@@ -111,7 +111,7 @@ export default {
         ? new Date(this.playerResults[0].completed_at) : null;
       return this.playerResults.map((player, idx) => {
         if (!player) return null;
-        const giverPlayer = this.players.find((play) => play.giver_player_id === player.player_id);
+        const giverPlayer = this.players.find((play) => play.player_id === player.giver_player_id);
         return {
           pos: this.genPos(idx + 1),
           name: player.name.length > 18 ? `${player.name.slice(0, 18)}...` : player.name,
