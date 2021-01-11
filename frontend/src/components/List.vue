@@ -86,6 +86,7 @@
             class="post-it-input"
             placeholder="Enter a name or item"
             maxlength="255"
+            autocomplete="off"
             autofocus
             :id="`post-it-input-${idx}`"
             v-on:keyup.enter="submitPostitClicked()"

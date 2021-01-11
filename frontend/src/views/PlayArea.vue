@@ -63,6 +63,7 @@
               <b-input
                 class="question-panel-question-item-text"
                 maxlength="255"
+                autocomplete="off"
                 v-model="item.question"
                 v-on:blur="questionBlurred(item)"
               >
@@ -74,6 +75,7 @@
               <b-input
                 class="question-panel-question-item-text"
                 maxlength="255"
+                autocomplete="off"
                 v-model="newQuestionValue"
                 v-on:blur="newQuestionBlurred()"
                 placeholder="Add question here"
