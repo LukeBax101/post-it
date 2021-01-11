@@ -42,6 +42,7 @@
               type="text"
               required
               maxlength=1
+              autocomplete="off"
               :autofocus="index === 1"
               v-on:update="(val) => fieldUpdated(field.id, val, index)"
               v-on:keydown.delete="backSpacePressed(field.id, index)"
@@ -73,6 +74,7 @@
             :state="validity[field.id]"
             required
             :autofocus="idx === 0"
+            autocomplete="off"
             maxlength="255"
             v-on:update="(val) => fieldUpdated(field.id, val)"
           >
